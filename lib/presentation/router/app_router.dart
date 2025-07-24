@@ -1,38 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:godafly_flutter/presentation/screens/chat/chat_screen.dart';
-import 'package:godafly_flutter/presentation/screens/travels/travels_screen.dart';
 import '../providers/auth_provider.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/search/search_screen.dart';
+import '../screens/travels/travels_screen.dart';
+import '../screens/chat/chat_screen.dart';
+import '../screens/notifications/notification_screen.dart';
 import '../screens/other_screens.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authNotifierProvider);
-
   return GoRouter(
     initialLocation: '/splash',
-    redirect: (context, state) {
-      final isAuthenticated = authState.status == AuthStatus.authenticated;
-      final isLoading = authState.status == AuthStatus.loading;
-
-      if (isLoading) return '/splash';
-
-      if (!isAuthenticated &&
-          !state.matchedLocation.startsWith('/login') &&
-          state.matchedLocation != '/splash') {
-        return '/login';
-      }
-
-      if (isAuthenticated &&
-          (state.matchedLocation == '/login' ||
-              state.matchedLocation == '/splash')) {
-        return '/home';
-      }
-
-      return null;
-    },
     routes: [
       GoRoute(
         path: '/splash',
@@ -73,7 +52,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     if (mounted) {
       final authState = ref.read(authNotifierProvider);
 
-      if (authState.status == AuthStatus.authenticated) {
+      if (authState.currentUser != null) {
         context.go('/home');
       } else {
         context.go('/login');
@@ -115,7 +94,7 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
-  final _emailController = TextEditingController(text: 'john@example.com');
+  final _emailController = TextEditingController(text: 'test@example.com');
   final _passwordController = TextEditingController(text: 'password123');
 
   @override
@@ -130,13 +109,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final authState = ref.watch(authNotifierProvider);
     final authNotifier = ref.watch(authNotifierProvider.notifier);
 
+    // Listen for auth state changes
     ref.listen<AuthState>(authNotifierProvider, (previous, next) {
-      if (next.status == AuthStatus.error && next.errorMessage != null) {
+      if (next.error != null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(next.errorMessage!), backgroundColor: Colors.red),
+          SnackBar(content: Text(next.error!), backgroundColor: Colors.red),
         );
         authNotifier.clearError();
+      }
+
+      // Auto-navigate to home on successful login
+      if (previous?.currentUser == null && next.currentUser != null) {
+        context.go('/home');
       }
     });
 
@@ -194,19 +178,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: authState.status == AuthStatus.loading
-                      ? null
-                      : () {
-                          authNotifier.login(_emailController.text.trim(),
-                              _passwordController.text.trim());
-                        },
+                  onPressed: authState.isLoading ? null : () {},
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
                     foregroundColor: const Color(0xFF25D097),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: authState.status == AuthStatus.loading
+                  child: authState.isLoading
                       ? const SizedBox(
                           height: 20,
                           width: 20,
@@ -224,7 +203,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     color: Colors.white.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8)),
                 child: const Text(
-                  'Demo credentials:\nemail: john@example.com\npassword: password123',
+                  'Demo credentials:\nemail: test@example.com\npassword: password123',
                   style: TextStyle(color: Colors.white70, fontSize: 12),
                   textAlign: TextAlign.center,
                 ),

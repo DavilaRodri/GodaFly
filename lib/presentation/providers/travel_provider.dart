@@ -1,8 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/travel.dart';
 import '../../domain/entities/user.dart';
-import '../../core/di/injection.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'dart:math';
+
+// Provider para el box de Hive
+final travelBoxProvider = Provider<Box>((ref) {
+  return Hive.box('travel_storage');
+});
 
 // Estado de travels
 class TravelState {
@@ -34,7 +39,9 @@ class TravelState {
 }
 
 class TravelNotifier extends StateNotifier<TravelState> {
-  TravelNotifier() : super(const TravelState()) {
+  final Box _travelBox;
+
+  TravelNotifier(this._travelBox) : super(const TravelState()) {
     _loadMyTravels();
   }
 
@@ -43,7 +50,8 @@ class TravelNotifier extends StateNotifier<TravelState> {
     state = state.copyWith(isLoading: true);
 
     try {
-      final savedTravels = appBox.get('my_travels', defaultValue: <dynamic>[]);
+      final savedTravels =
+          _travelBox.get('my_travels', defaultValue: <dynamic>[]);
       final travels = (savedTravels as List)
           .map((json) => Travel.fromJson(Map<String, dynamic>.from(json)))
           .toList();
@@ -135,7 +143,7 @@ class TravelNotifier extends StateNotifier<TravelState> {
   // Guardar viaje
   Future<void> _saveTravel(Travel travel) async {
     final updatedTravels = [...state.myTravels, travel];
-    await appBox.put(
+    await _travelBox.put(
         'my_travels', updatedTravels.map((t) => t.toJson()).toList());
 
     state = state.copyWith(myTravels: updatedTravels);
@@ -145,7 +153,7 @@ class TravelNotifier extends StateNotifier<TravelState> {
   Future<void> deleteTravel(String travelId) async {
     final updatedTravels =
         state.myTravels.where((t) => t.id != travelId).toList();
-    await appBox.put(
+    await _travelBox.put(
         'my_travels', updatedTravels.map((t) => t.toJson()).toList());
 
     state = state.copyWith(myTravels: updatedTravels);
@@ -208,6 +216,7 @@ class TravelNotifier extends StateNotifier<TravelState> {
         interests: userInterests,
         isProfileComplete: true,
         authType: AuthType.email,
+        createdAt: DateTime.now().subtract(const Duration(days: 30)),
       );
     });
   }
@@ -253,7 +262,8 @@ class TravelNotifier extends StateNotifier<TravelState> {
 // Provider principal
 final travelNotifierProvider =
     StateNotifierProvider<TravelNotifier, TravelState>((ref) {
-  return TravelNotifier();
+  final travelBox = ref.watch(travelBoxProvider);
+  return TravelNotifier(travelBox);
 });
 
 // Providers de conveniencia

@@ -158,6 +158,7 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
         profileImage:
             'https://ui-avatars.com/api/?name=Sarah+Johnson&background=FF6B6B&color=fff',
         authType: AuthType.email,
+        createdAt: DateTime.now().subtract(const Duration(days: 30)),
       ),
       User(
         id: '3',
@@ -167,6 +168,7 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
         profileImage:
             'https://ui-avatars.com/api/?name=Mike+Chen&background=4ECDC4&color=fff',
         authType: AuthType.email,
+        createdAt: DateTime.now().subtract(const Duration(days: 30)),
       ),
       User(
         id: '4',
@@ -176,6 +178,7 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
         profileImage:
             'https://ui-avatars.com/api/?name=Emma+Wilson&background=95E1D3&color=fff',
         authType: AuthType.email,
+        createdAt: DateTime.now().subtract(const Duration(days: 30)),
       ),
     ];
 

@@ -1,223 +1,183 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/user.dart';
-import '../../core/di/injection.dart';
+import 'package:godafly/domain/entities/user.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
-// Estados de autenticación
-enum AuthStatus {
-  initial,
-  loading,
-  authenticated,
-  unauthenticated,
-  error,
-}
+// Provider para el box de Hive
+final userBoxProvider = Provider<Box>((ref) {
+  return Hive.box('user_storage');
+});
 
-// Estado del auth
+// Estados del auth
 class AuthState {
-  final AuthStatus status;
-  final User? user;
-  final String? errorMessage;
+  final User? currentUser;
+  final bool isLoading;
+  final String? error;
 
   const AuthState({
-    this.status = AuthStatus.initial,
-    this.user,
-    this.errorMessage,
+    this.currentUser,
+    this.isLoading = false,
+    this.error,
   });
 
   AuthState copyWith({
-    AuthStatus? status,
-    User? user,
-    String? errorMessage,
+    User? currentUser,
+    bool? isLoading,
+    String? error,
   }) {
     return AuthState(
-      status: status ?? this.status,
-      user: user ?? this.user,
-      errorMessage: errorMessage ?? this.errorMessage,
+      currentUser: currentUser ?? this.currentUser,
+      isLoading: isLoading ?? this.isLoading,
+      error: error ?? this.error,
     );
   }
 }
 
-// Provider del estado de auth
+// Notifier del auth
 class AuthNotifier extends StateNotifier<AuthState> {
-  AuthNotifier() : super(const AuthState()) {
-    _initializeAuth();
+  final Box _userBox;
+
+  AuthNotifier(this._userBox) : super(const AuthState()) {
+    _loadSavedUser();
   }
 
-  // Inicializar autenticación
-  Future<void> _initializeAuth() async {
-    state = state.copyWith(status: AuthStatus.loading);
-
+  void _loadSavedUser() {
     try {
-      // Simular delay de carga
-      await Future.delayed(const Duration(seconds: 1));
-
-      // Verificar si hay token guardado
-      final token = await secureStorage.read(key: 'auth_token');
-
-      if (token != null && token.isNotEmpty) {
-        // Simular obtener usuario del almacenamiento local
-        final userData = appBox.get('user_data');
-        if (userData != null) {
-          final user = User.fromJson(Map<String, dynamic>.from(userData));
-          state = state.copyWith(
-            status: AuthStatus.authenticated,
-            user: user,
-          );
-          print('✅ Usuario autenticado: ${user.firstName}');
-          return;
-        }
+      final userData = _userBox.get('current_user');
+      if (userData != null) {
+        final user = User.fromJson(Map<String, dynamic>.from(userData));
+        state = state.copyWith(currentUser: user);
+        print('✅ Loaded saved user: ${user.email}');
       }
-
-      // No hay sesión guardada
-      state = state.copyWith(status: AuthStatus.unauthenticated);
-      print('❌ No hay sesión guardada');
     } catch (e) {
-      print('❌ Error inicializando auth: $e');
-      state = state.copyWith(
-        status: AuthStatus.unauthenticated,
-        errorMessage: 'Error initializing auth: $e',
-      );
+      print('❌ Error loading saved user: $e');
     }
   }
 
-  // Login simulado
-  Future<void> login(String email, String password) async {
-    print('🔄 Iniciando login...');
-    state = state.copyWith(status: AuthStatus.loading);
+  Future<void> login({
+    required String email,
+    required String password,
+  }) async {
+    state = state.copyWith(isLoading: true, error: null);
 
     try {
-      // Simular API call
+      // Simular delay de login
       await Future.delayed(const Duration(seconds: 1));
 
-      // Validar credenciales básicas (demo)
-      if (email.isEmpty || password.isEmpty) {
-        throw Exception('Email and password are required');
+      // Mock login - en producción aquí iría la llamada a la API
+      if (email.isNotEmpty && password.isNotEmpty) {
+        final user = User(
+          id: '1',
+          email: email,
+          firstName: 'John',
+          lastName: 'Doe',
+          bio: 'Travel enthusiast from the mock login',
+          profileImage: null,
+          interests: [
+            Interest(id: '1', name: 'Adventure'),
+            Interest(id: '2', name: 'Culture'),
+          ],
+          createdAt: DateTime.now(),
+        );
+
+        // Guardar usuario en storage
+        await _userBox.put('current_user', user.toJson());
+
+        state = state.copyWith(
+          currentUser: user,
+          isLoading: false,
+        );
+
+        print('✅ Login successful for: $email');
+      } else {
+        throw Exception('Invalid credentials');
       }
-
-      // Usuario simulado
-      final user = User(
-        id: '1',
-        firstName: 'John',
-        lastName: 'Traveler',
-        email: email,
-        mobile: '+1234567890',
-        profileImage:
-            'https://ui-avatars.com/api/?name=John+Traveler&background=25D097&color=fff',
-        dateOfBirth: DateTime(1990, 5, 15),
-        bio: 'Love to travel and meet new people! ✈️🌍',
-        interests: [
-          const Interest(id: '1', name: 'Travel', isSelected: true),
-          const Interest(id: '2', name: 'Food', isSelected: true),
-          const Interest(id: '3', name: 'Photography', isSelected: true),
-          const Interest(id: '4', name: 'Music', isSelected: true),
-        ],
-        isProfileComplete: true,
-        authType: AuthType.email,
-      );
-
-      // Guardar token y usuario
-      await secureStorage.write(
-          key: 'auth_token',
-          value: 'demo_token_${DateTime.now().millisecondsSinceEpoch}');
-      await appBox.put('user_data', user.toJson());
-
-      state = state.copyWith(
-        status: AuthStatus.authenticated,
-        user: user,
-        errorMessage: null,
-      );
-
-      print('✅ Login exitoso: ${user.firstName}');
     } catch (e) {
-      print('❌ Error en login: $e');
       state = state.copyWith(
-        status: AuthStatus.error,
-        errorMessage: 'Login failed: $e',
+        isLoading: false,
+        error: e.toString(),
       );
+      print('❌ Login error: $e');
     }
   }
 
-  // Registro simulado
-  Future<void> register(
-      String firstName, String lastName, String email, String password) async {
-    state = state.copyWith(status: AuthStatus.loading);
+  Future<void> register({
+    required String email,
+    required String password,
+    required String firstName,
+    required String lastName,
+    String? bio,
+    List<Interest> interests = const [],
+  }) async {
+    state = state.copyWith(isLoading: true, error: null);
 
     try {
+      // Simular delay de registro
       await Future.delayed(const Duration(seconds: 1));
 
       final user = User(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
+        email: email,
         firstName: firstName,
         lastName: lastName,
-        email: email,
-        profileImage:
-            'https://ui-avatars.com/api/?name=$firstName+$lastName&background=25D097&color=fff',
-        isProfileComplete: false,
-        authType: AuthType.email,
+        bio: bio ?? 'New traveler ready for adventures!',
+        profileImage: null,
+        interests: interests,
+        createdAt: DateTime.now(),
       );
 
-      await secureStorage.write(
-          key: 'auth_token',
-          value: 'demo_token_new_${DateTime.now().millisecondsSinceEpoch}');
-      await appBox.put('user_data', user.toJson());
+      // Guardar usuario en storage
+      await _userBox.put('current_user', user.toJson());
 
       state = state.copyWith(
-        status: AuthStatus.authenticated,
-        user: user,
+        currentUser: user,
+        isLoading: false,
       );
+
+      print('✅ Registration successful for: $email');
     } catch (e) {
       state = state.copyWith(
-        status: AuthStatus.error,
-        errorMessage: 'Registration failed: $e',
+        isLoading: false,
+        error: e.toString(),
       );
+      print('❌ Registration error: $e');
     }
   }
 
-  // Logout
   Future<void> logout() async {
-    print('🔄 Cerrando sesión...');
     try {
-      await secureStorage.delete(key: 'auth_token');
-      await appBox.delete('user_data');
-
-      state = state.copyWith(
-        status: AuthStatus.unauthenticated,
-        user: null,
-        errorMessage: null,
-      );
-      print('✅ Sesión cerrada');
+      await _userBox.delete('current_user');
+      state = const AuthState();
+      print('✅ Logout successful');
     } catch (e) {
-      print('❌ Error cerrando sesión: $e');
-      state = state.copyWith(
-        status: AuthStatus.error,
-        errorMessage: 'Logout failed: $e',
-      );
+      print('❌ Logout error: $e');
     }
   }
 
-  // Limpiar errores
   void clearError() {
-    state = state.copyWith(
-      status: AuthStatus.unauthenticated,
-      errorMessage: null,
-    );
+    state = state.copyWith(error: null);
   }
 }
 
-// Provider principal
+// Provider principal del auth
 final authNotifierProvider =
     StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  return AuthNotifier();
+  final userBox = ref.watch(userBoxProvider);
+  return AuthNotifier(userBox);
 });
 
 // Providers de conveniencia
 final currentUserProvider = Provider<User?>((ref) {
-  return ref.watch(authNotifierProvider).user;
+  return ref.watch(authNotifierProvider).currentUser;
 });
 
 final isAuthenticatedProvider = Provider<bool>((ref) {
-  return ref.watch(authNotifierProvider).status == AuthStatus.authenticated;
+  return ref.watch(authNotifierProvider).currentUser != null;
 });
 
-final isLoadingProvider = Provider<bool>((ref) {
-  return ref.watch(authNotifierProvider).status == AuthStatus.loading;
+final isAuthLoadingProvider = Provider<bool>((ref) {
+  return ref.watch(authNotifierProvider).isLoading;
+});
+
+final authErrorProvider = Provider<String?>((ref) {
+  return ref.watch(authNotifierProvider).error;
 });

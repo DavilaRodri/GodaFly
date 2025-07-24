@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:godafly_flutter/data/service/amadeus_service.dart';
+import 'package:godafly/data/service/amadeus_service.dart';
+import 'package:godafly/presentation/screens/notifications/map_screen.dart';
 import '../../providers/flight_provider.dart';
 
 class FlightSearchScreen extends ConsumerStatefulWidget {
@@ -43,6 +44,22 @@ class _FlightSearchScreenState extends ConsumerState<FlightSearchScreen> {
         title: const Text('Search Flights'),
         backgroundColor: const Color(0xFF25D097),
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.map),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => MapScreen(
+                    originAirport: _selectedOrigin,
+                    destinationAirport: _selectedDestination,
+                    flightOffers: ref.read(flightOffersProvider),
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [

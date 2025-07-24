@@ -11,6 +11,7 @@ class User {
   final List<UserImage> images;
   final bool isProfileComplete;
   final AuthType authType;
+  final DateTime createdAt; // ✅ AGREGADO
 
   const User({
     required this.id,
@@ -25,6 +26,7 @@ class User {
     this.images = const [],
     this.isProfileComplete = false,
     this.authType = AuthType.email,
+    required this.createdAt, // ✅ AGREGADO como requerido
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -50,6 +52,9 @@ class User {
       isProfileComplete: json['isProfileComplete'] as bool? ?? false,
       authType: AuthType.values.firstWhere((e) => e.name == json['authType'],
           orElse: () => AuthType.email),
+      createdAt: json['createdAt'] != null // ✅ AGREGADO
+          ? DateTime.parse(json['createdAt'])
+          : DateTime.now(),
     );
   }
 
@@ -67,6 +72,7 @@ class User {
       'images': images.map((e) => e.toJson()).toList(),
       'isProfileComplete': isProfileComplete,
       'authType': authType.name,
+      'createdAt': createdAt.toIso8601String(), // ✅ AGREGADO
     };
   }
 }

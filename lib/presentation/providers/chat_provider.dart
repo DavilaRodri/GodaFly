@@ -133,6 +133,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
           const Interest(id: '2', name: 'Photography', isSelected: true),
         ],
         authType: AuthType.email,
+        createdAt: DateTime.now().subtract(const Duration(days: 30)),
       ),
       User(
         id: '3',
@@ -147,6 +148,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
           const Interest(id: '2', name: 'Food', isSelected: true),
         ],
         authType: AuthType.email,
+        createdAt: DateTime.now().subtract(const Duration(days: 30)),
       ),
       User(
         id: '4',
@@ -161,6 +163,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
           const Interest(id: '2', name: 'Coffee', isSelected: true),
         ],
         authType: AuthType.email,
+        createdAt: DateTime.now().subtract(const Duration(days: 30)),
       ),
     ];
 
