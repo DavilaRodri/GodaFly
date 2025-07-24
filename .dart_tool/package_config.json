@@ -152,6 +152,12 @@
       "languageVersion": "3.4"
     },
     {
+      "name": "csslib",
+      "rootUri": "file:///Users/rd/.pub-cache/hosted/pub.dev/csslib-1.0.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.1"
+    },
+    {
       "name": "cupertino_icons",
       "rootUri": "file:///Users/rd/.pub-cache/hosted/pub.dev/cupertino_icons-1.0.8",
       "packageUri": "lib/",
@@ -404,6 +410,42 @@
       "languageVersion": "3.6"
     },
     {
+      "name": "google_maps",
+      "rootUri": "file:///Users/rd/.pub-cache/hosted/pub.dev/google_maps-8.1.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "google_maps_flutter",
+      "rootUri": "file:///Users/rd/.pub-cache/hosted/pub.dev/google_maps_flutter-2.12.3",
+      "packageUri": "lib/",
+      "languageVersion": "3.6"
+    },
+    {
+      "name": "google_maps_flutter_android",
+      "rootUri": "file:///Users/rd/.pub-cache/hosted/pub.dev/google_maps_flutter_android-2.17.0",
+      "packageUri": "lib/",
+      "languageVersion": "3.6"
+    },
+    {
+      "name": "google_maps_flutter_ios",
+      "rootUri": "file:///Users/rd/.pub-cache/hosted/pub.dev/google_maps_flutter_ios-2.15.4",
+      "packageUri": "lib/",
+      "languageVersion": "3.6"
+    },
+    {
+      "name": "google_maps_flutter_platform_interface",
+      "rootUri": "file:///Users/rd/.pub-cache/hosted/pub.dev/google_maps_flutter_platform_interface-2.12.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.6"
+    },
+    {
+      "name": "google_maps_flutter_web",
+      "rootUri": "file:///Users/rd/.pub-cache/hosted/pub.dev/google_maps_flutter_web-0.5.12+2",
+      "packageUri": "lib/",
+      "languageVersion": "3.6"
+    },
+    {
       "name": "graphs",
       "rootUri": "file:///Users/rd/.pub-cache/hosted/pub.dev/graphs-2.3.2",
       "packageUri": "lib/",
@@ -420,6 +462,12 @@
       "rootUri": "file:///Users/rd/.pub-cache/hosted/pub.dev/hive_flutter-1.1.0",
       "packageUri": "lib/",
       "languageVersion": "2.12"
+    },
+    {
+      "name": "html",
+      "rootUri": "file:///Users/rd/.pub-cache/hosted/pub.dev/html-0.15.6",
+      "packageUri": "lib/",
+      "languageVersion": "3.2"
     },
     {
       "name": "http",
@@ -712,6 +760,12 @@
     {
       "name": "rxdart",
       "rootUri": "file:///Users/rd/.pub-cache/hosted/pub.dev/rxdart-0.28.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "sanitize_html",
+      "rootUri": "file:///Users/rd/.pub-cache/hosted/pub.dev/sanitize_html-2.1.0",
       "packageUri": "lib/",
       "languageVersion": "2.12"
     },

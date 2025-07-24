@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/travel_provider.dart';
+import '../flights/flight_search_screen.dart';
 
 class TravelsScreen extends ConsumerWidget {
   const TravelsScreen({super.key});
@@ -628,17 +629,9 @@ class TravelsScreen extends ConsumerWidget {
   }
 
   void _findTravelers(BuildContext context, Map<String, dynamic> travel) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Searching for travelers on ${travel['title']}...'),
-        backgroundColor: const Color(0xFF25D097),
-        action: SnackBarAction(
-          label: 'Go to Search',
-          textColor: Colors.white,
-          onPressed: () {
-            // Aquí podrías navegar al SearchScreen con datos pre-rellenados
-          },
-        ),
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const FlightSearchScreen(),
       ),
     );
   }
