@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:godafly/data/service/amadeus_service.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../providers/flight_provider.dart';
 import 'dart:math' as math;
 
@@ -22,13 +21,10 @@ class MapScreen extends ConsumerStatefulWidget {
 }
 
 class _MapScreenState extends ConsumerState<MapScreen> {
-  GoogleMapController? _mapController;
-  Set<Marker> _markers = {};
-  Set<Polyline> _polylines = {};
   bool _showFlightPath = true;
   bool _showAirports = true;
 
-  // Aeropuertos destacados para mostrar en el mapa
+  // Aeropuertos destacados para mostrar en la vista
   final List<Airport> _featuredAirports = [
     Airport(
       iataCode: 'JFK',
@@ -84,202 +80,13 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       timeZone: 'America/Los_Angeles',
       coordinates: GeoCoordinates(latitude: 33.9425, longitude: -118.4081),
     ),
-    Airport(
-      iataCode: 'SIN',
-      name: 'Singapore Changi',
-      cityName: 'Singapore',
-      countryName: 'Singapore',
-      countryCode: 'SG',
-      timeZone: 'Asia/Singapore',
-      coordinates: GeoCoordinates(latitude: 1.3644, longitude: 103.9915),
-    ),
-    Airport(
-      iataCode: 'HND',
-      name: 'Tokyo Haneda',
-      cityName: 'Tokyo',
-      countryName: 'Japan',
-      countryCode: 'JP',
-      timeZone: 'Asia/Tokyo',
-      coordinates: GeoCoordinates(latitude: 35.5494, longitude: 139.7798),
-    ),
   ];
-
-  @override
-  void initState() {
-    super.initState();
-    _setupMap();
-  }
-
-  void _setupMap() {
-    _createMarkers();
-    _createFlightPaths();
-  }
-
-  void _createMarkers() {
-    final markers = <Marker>{};
-
-    // Agregar aeropuertos destacados
-    if (_showAirports) {
-      for (final airport in _featuredAirports) {
-        markers.add(
-          Marker(
-            markerId: MarkerId(airport.iataCode),
-            position: LatLng(
-              airport.coordinates.latitude,
-              airport.coordinates.longitude,
-            ),
-            icon:
-                BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-            infoWindow: InfoWindow(
-              title: '${airport.iataCode} - ${airport.name}',
-              snippet: '${airport.cityName}, ${airport.countryName}',
-            ),
-            onTap: () => _showAirportDetails(airport),
-          ),
-        );
-      }
-    }
-
-    // Resaltar origen y destino si existen
-    if (widget.originAirport != null) {
-      markers.add(
-        Marker(
-          markerId: MarkerId('origin_${widget.originAirport!.iataCode}'),
-          position: LatLng(
-            widget.originAirport!.coordinates.latitude,
-            widget.originAirport!.coordinates.longitude,
-          ),
-          icon:
-              BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
-          infoWindow: InfoWindow(
-            title: '🛫 ${widget.originAirport!.iataCode}',
-            snippet: 'Origin: ${widget.originAirport!.cityName}',
-          ),
-        ),
-      );
-    }
-
-    if (widget.destinationAirport != null) {
-      markers.add(
-        Marker(
-          markerId:
-              MarkerId('destination_${widget.destinationAirport!.iataCode}'),
-          position: LatLng(
-            widget.destinationAirport!.coordinates.latitude,
-            widget.destinationAirport!.coordinates.longitude,
-          ),
-          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-          infoWindow: InfoWindow(
-            title: '🛬 ${widget.destinationAirport!.iataCode}',
-            snippet: 'Destination: ${widget.destinationAirport!.cityName}',
-          ),
-        ),
-      );
-    }
-
-    setState(() {
-      _markers = markers;
-    });
-  }
-
-  void _createFlightPaths() {
-    final polylines = <Polyline>{};
-
-    if (_showFlightPath &&
-        widget.originAirport != null &&
-        widget.destinationAirport != null) {
-      final origin = LatLng(
-        widget.originAirport!.coordinates.latitude,
-        widget.originAirport!.coordinates.longitude,
-      );
-      final destination = LatLng(
-        widget.destinationAirport!.coordinates.latitude,
-        widget.destinationAirport!.coordinates.longitude,
-      );
-
-      // Crear ruta curva (great circle path aproximado)
-      final pathPoints = _createCurvedPath(origin, destination);
-
-      polylines.add(
-        Polyline(
-          polylineId: const PolylineId('flight_path'),
-          points: pathPoints,
-          color: const Color(0xFF25D097),
-          width: 3,
-          patterns: [PatternItem.dash(20), PatternItem.gap(10)],
-        ),
-      );
-
-      // Añadir polilínea de rutas populares entre aeropuertos destacados
-      _addPopularRoutes(polylines);
-    }
-
-    setState(() {
-      _polylines = polylines;
-    });
-  }
-
-  void _addPopularRoutes(Set<Polyline> polylines) {
-    final popularRoutes = [
-      ['JFK', 'LHR'], // New York - London
-      ['CDG', 'NRT'], // Paris - Tokyo
-      ['DXB', 'SIN'], // Dubai - Singapore
-      ['LAX', 'NRT'], // Los Angeles - Tokyo
-    ];
-
-    for (final route in popularRoutes) {
-      final origin =
-          _featuredAirports.firstWhere((a) => a.iataCode == route[0]);
-      final destination =
-          _featuredAirports.firstWhere((a) => a.iataCode == route[1]);
-
-      final originLatLng =
-          LatLng(origin.coordinates.latitude, origin.coordinates.longitude);
-      final destinationLatLng = LatLng(
-          destination.coordinates.latitude, destination.coordinates.longitude);
-
-      polylines.add(
-        Polyline(
-          polylineId: PolylineId('route_${route[0]}_${route[1]}'),
-          points: _createCurvedPath(originLatLng, destinationLatLng),
-          color: Colors.blue.withOpacity(0.3),
-          width: 2,
-          patterns: [PatternItem.dot, PatternItem.gap(10)],
-        ),
-      );
-    }
-  }
-
-  List<LatLng> _createCurvedPath(LatLng start, LatLng end) {
-    final points = <LatLng>[];
-    const int numPoints = 50;
-
-    for (int i = 0; i <= numPoints; i++) {
-      final t = i / numPoints;
-
-      // Interpolación lineal básica con curva
-      final lat = _lerp(start.latitude, end.latitude, t);
-      final lng = _lerp(start.longitude, end.longitude, t);
-
-      // Añadir curvatura para simular ruta de gran círculo
-      final curvature = math.sin(math.pi * t) * 0.1;
-      final adjustedLat = lat + curvature;
-
-      points.add(LatLng(adjustedLat, lng));
-    }
-
-    return points;
-  }
-
-  double _lerp(double start, double end, double t) {
-    return start + (end - start) * t;
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Flight Map'),
+        title: const Text('Flight Routes'),
         backgroundColor: const Color(0xFF25D097),
         actions: [
           IconButton(
@@ -287,7 +94,6 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             onPressed: () {
               setState(() {
                 _showAirports = !_showAirports;
-                _createMarkers();
               });
             },
           ),
@@ -297,145 +103,287 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             onPressed: () {
               setState(() {
                 _showFlightPath = !_showFlightPath;
-                _createFlightPaths();
               });
             },
           ),
           PopupMenuButton<String>(
             onSelected: (value) {
               switch (value) {
-                case 'satellite':
-                  // Cambiar a vista satelital
+                case 'refresh':
+                  setState(() {});
                   break;
-                case 'traffic':
-                  // Mostrar tráfico
-                  break;
-                case 'weather':
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Weather overlay coming soon!')),
-                  );
+                case 'info':
+                  _showRouteInfo(context);
                   break;
               }
             },
             itemBuilder: (context) => [
-              const PopupMenuItem(
-                  value: 'satellite', child: Text('Satellite View')),
-              const PopupMenuItem(
-                  value: 'traffic', child: Text('Show Traffic')),
-              const PopupMenuItem(
-                  value: 'weather', child: Text('Weather Overlay')),
+              const PopupMenuItem(value: 'refresh', child: Text('Refresh')),
+              const PopupMenuItem(value: 'info', child: Text('Route Info')),
             ],
           ),
         ],
       ),
-      body: Stack(
+      body: Column(
         children: [
-          GoogleMap(
-            onMapCreated: (GoogleMapController controller) {
-              _mapController = controller;
-              _fitMapToMarkers();
-            },
-            initialCameraPosition: const CameraPosition(
-              target: LatLng(40.7128, -74.0060), // New York por defecto
-              zoom: 3.0,
+          // Route summary header
+          if (widget.originAirport != null && widget.destinationAirport != null)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF25D097), Color(0xFF1DB584)],
+                ),
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(20),
+                  bottomRight: Radius.circular(20),
+                ),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.originAirport!.iataCode,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              widget.originAirport!.cityName,
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.flight_takeoff,
+                          color: Colors.white, size: 24),
+                      const SizedBox(width: 16),
+                      const Icon(Icons.more_horiz,
+                          color: Colors.white, size: 24),
+                      const SizedBox(width: 16),
+                      const Icon(Icons.flight_land,
+                          color: Colors.white, size: 24),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              widget.destinationAirport!.iataCode,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              widget.destinationAirport!.cityName,
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (_calculateDistance() != null) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      'Distance: ${_calculateDistance()!.toStringAsFixed(0)} km',
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ),
-            markers: _markers,
-            polylines: _polylines,
-            mapType: MapType.normal,
-            zoomControlsEnabled: false,
-            myLocationButtonEnabled: true,
-            myLocationEnabled: true,
-            compassEnabled: true,
-            mapToolbarEnabled: false,
+
+          // Airport list
+          Expanded(
+            child: _buildAirportList(),
           ),
 
-          // Panel de información flotante
+          // Flight info panel
           if (widget.flightOffers != null && widget.flightOffers!.isNotEmpty)
-            Positioned(
-              bottom: 20,
-              left: 16,
-              right: 16,
-              child: _buildFlightInfoPanel(),
+            _buildFlightInfoPanel(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAirportList() {
+    final airportsToShow = _showAirports ? _featuredAirports : <Airport>[];
+
+    // Add origin and destination if they exist
+    final allAirports = <Airport>[];
+    if (widget.originAirport != null) allAirports.add(widget.originAirport!);
+    if (widget.destinationAirport != null)
+      allAirports.add(widget.destinationAirport!);
+    allAirports.addAll(airportsToShow);
+
+    // Remove duplicates
+    final uniqueAirports = allAirports.toSet().toList();
+
+    if (uniqueAirports.isEmpty) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.local_airport, size: 64, color: Colors.grey),
+            SizedBox(height: 16),
+            Text('No airports to display',
+                style: TextStyle(fontSize: 18, color: Colors.grey)),
+            Text('Enable airport view to see featured airports',
+                style: TextStyle(color: Colors.grey)),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: uniqueAirports.length,
+      itemBuilder: (context, index) {
+        final airport = uniqueAirports[index];
+        final isOrigin = airport.iataCode == widget.originAirport?.iataCode;
+        final isDestination =
+            airport.iataCode == widget.destinationAirport?.iataCode;
+
+        return Card(
+          margin: const EdgeInsets.only(bottom: 12),
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(
+              color: isOrigin
+                  ? Colors.green
+                  : isDestination
+                      ? Colors.red
+                      : Colors.transparent,
+              width: 2,
             ),
-
-          // Leyenda flotante
-          Positioned(
-            top: 20,
-            right: 16,
-            child: _buildLegend(),
           ),
-        ],
-      ),
-      floatingActionButton: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          FloatingActionButton(
-            heroTag: 'center_map',
-            mini: true,
-            backgroundColor: Colors.white,
-            onPressed: _fitMapToMarkers,
-            child:
-                const Icon(Icons.center_focus_strong, color: Color(0xFF25D097)),
+          child: ListTile(
+            contentPadding: const EdgeInsets.all(16),
+            leading: Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: isOrigin
+                    ? Colors.green.withOpacity(0.1)
+                    : isDestination
+                        ? Colors.red.withOpacity(0.1)
+                        : const Color(0xFF25D097).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(25),
+              ),
+              child: Icon(
+                isOrigin
+                    ? Icons.flight_takeoff
+                    : isDestination
+                        ? Icons.flight_land
+                        : Icons.local_airport,
+                color: isOrigin
+                    ? Colors.green
+                    : isDestination
+                        ? Colors.red
+                        : const Color(0xFF25D097),
+              ),
+            ),
+            title: Row(
+              children: [
+                Text(
+                  airport.iataCode,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                if (isOrigin)
+                  const Chip(
+                    label: Text('Origin', style: TextStyle(fontSize: 10)),
+                    backgroundColor: Colors.green,
+                    labelStyle: TextStyle(color: Colors.white),
+                  )
+                else if (isDestination)
+                  const Chip(
+                    label: Text('Destination', style: TextStyle(fontSize: 10)),
+                    backgroundColor: Colors.red,
+                    labelStyle: TextStyle(color: Colors.white),
+                  ),
+              ],
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  airport.name,
+                  style: const TextStyle(fontWeight: FontWeight.w500),
+                ),
+                const SizedBox(height: 4),
+                Text('${airport.cityName}, ${airport.countryName}'),
+                const SizedBox(height: 4),
+                Text(
+                  'Timezone: ${airport.timeZone}',
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+                Text(
+                  'Coordinates: ${airport.coordinates.latitude.toStringAsFixed(4)}, ${airport.coordinates.longitude.toStringAsFixed(4)}',
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+              ],
+            ),
+            trailing: PopupMenuButton<String>(
+              onSelected: (value) {
+                switch (value) {
+                  case 'search':
+                    _searchFlightsFrom(airport);
+                    break;
+                  case 'info':
+                    _showAirportDetails(airport);
+                    break;
+                }
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'search',
+                  child: Row(
+                    children: [
+                      Icon(Icons.search, size: 16),
+                      SizedBox(width: 8),
+                      Text('Search Flights'),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'info',
+                  child: Row(
+                    children: [
+                      Icon(Icons.info, size: 16),
+                      SizedBox(width: 8),
+                      Text('More Info'),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 8),
-          FloatingActionButton(
-            heroTag: 'my_location',
-            mini: true,
-            backgroundColor: Colors.white,
-            onPressed: _goToMyLocation,
-            child: const Icon(Icons.my_location, color: Color(0xFF25D097)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLegend() {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text('Legend',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-          const SizedBox(height: 8),
-          _buildLegendItem(Colors.green, 'Origin'),
-          _buildLegendItem(Colors.red, 'Destination'),
-          _buildLegendItem(Colors.blue, 'Airports'),
-          _buildLegendItem(const Color(0xFF25D097), 'Flight Path'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLegendItem(Color color, String label) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 12,
-            height: 12,
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-          ),
-          const SizedBox(width: 6),
-          Text(label, style: const TextStyle(fontSize: 11)),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -444,6 +392,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     final itinerary = offer.itineraries.first;
 
     return Container(
+      margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -545,28 +494,40 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     );
   }
 
-  void _fitMapToMarkers() {
-    if (_markers.isEmpty || _mapController == null) return;
+  double? _calculateDistance() {
+    if (widget.originAirport == null || widget.destinationAirport == null) {
+      return null;
+    }
 
-    final bounds = _calculateBounds(_markers);
-    _mapController!.animateCamera(
-      CameraUpdate.newLatLngBounds(bounds, 100.0),
-    );
+    final origin = widget.originAirport!.coordinates;
+    final destination = widget.destinationAirport!.coordinates;
+
+    // Haversine formula for distance calculation
+    const double earthRadius = 6371; // km
+
+    final double lat1Rad = origin.latitude * math.pi / 180;
+    final double lat2Rad = destination.latitude * math.pi / 180;
+    final double deltaLatRad =
+        (destination.latitude - origin.latitude) * math.pi / 180;
+    final double deltaLngRad =
+        (destination.longitude - origin.longitude) * math.pi / 180;
+
+    final double a = math.sin(deltaLatRad / 2) * math.sin(deltaLatRad / 2) +
+        math.cos(lat1Rad) *
+            math.cos(lat2Rad) *
+            math.sin(deltaLngRad / 2) *
+            math.sin(deltaLngRad / 2);
+    final double c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
+
+    return earthRadius * c;
   }
 
-  LatLngBounds _calculateBounds(Set<Marker> markers) {
-    final lats = markers.map((m) => m.position.latitude).toList();
-    final lngs = markers.map((m) => m.position.longitude).toList();
-
-    return LatLngBounds(
-      southwest: LatLng(lats.reduce(math.min), lngs.reduce(math.min)),
-      northeast: LatLng(lats.reduce(math.max), lngs.reduce(math.max)),
-    );
-  }
-
-  void _goToMyLocation() async {
+  void _searchFlightsFrom(Airport airport) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Location services coming soon!')),
+      SnackBar(
+        content: Text('Searching flights from ${airport.iataCode}...'),
+        backgroundColor: const Color(0xFF25D097),
+      ),
     );
   }
 
@@ -632,11 +593,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   child: ElevatedButton.icon(
                     onPressed: () {
                       Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                            content: Text(
-                                'Searching flights from ${airport.iataCode}...')),
-                      );
+                      _searchFlightsFrom(airport);
                     },
                     icon: const Icon(Icons.search, size: 16),
                     label: const Text('Search Flights'),
@@ -652,11 +609,11 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                             content: Text(
-                                'Getting directions to ${airport.name}...')),
+                                'Airport info for ${airport.name} displayed')),
                       );
                     },
-                    icon: const Icon(Icons.directions, size: 16),
-                    label: const Text('Directions'),
+                    icon: const Icon(Icons.info, size: 16),
+                    label: const Text('More Info'),
                     style: OutlinedButton.styleFrom(
                         foregroundColor: const Color(0xFF25D097)),
                   ),
@@ -681,6 +638,50 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           Expanded(
             child: Text(value,
                 style: const TextStyle(fontWeight: FontWeight.w500)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showRouteInfo(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Route Information'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (widget.originAirport != null &&
+                widget.destinationAirport != null) ...[
+              Text(
+                  'Route: ${widget.originAirport!.iataCode} → ${widget.destinationAirport!.iataCode}'),
+              const SizedBox(height: 8),
+              if (_calculateDistance() != null)
+                Text(
+                    'Distance: ${_calculateDistance()!.toStringAsFixed(0)} km'),
+              const SizedBox(height: 8),
+              Text(
+                  'Origin: ${widget.originAirport!.cityName}, ${widget.originAirport!.countryName}'),
+              const SizedBox(height: 4),
+              Text(
+                  'Destination: ${widget.destinationAirport!.cityName}, ${widget.destinationAirport!.countryName}'),
+            ] else ...[
+              const Text(
+                  'No route selected. This screen shows featured airports and flight information.'),
+            ],
+            const SizedBox(height: 16),
+            Text('Featured Airports: ${_featuredAirports.length}'),
+            if (widget.flightOffers != null)
+              Text('Flight Offers: ${widget.flightOffers!.length}'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
           ),
         ],
       ),

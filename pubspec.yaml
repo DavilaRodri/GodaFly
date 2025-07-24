@@ -29,13 +29,13 @@ dependencies:
   geolocator: ^10.1.0
   geocoding: ^2.1.1
   
-  # Firebase - NUEVO
-  firebase_core: ^2.24.2
-  firebase_auth: ^4.15.3
-  cloud_firestore: ^4.13.6
-  firebase_storage: ^11.5.6
-  firebase_messaging: ^14.7.10
-  google_sign_in: ^6.1.6
+  # Firebase - NUEVO - Versiones compatibles
+  firebase_core: ^2.32.0
+  firebase_auth: ^4.20.0
+  cloud_firestore: ^4.17.5
+  firebase_storage: ^11.7.7
+  firebase_messaging: ^14.9.4
+  google_sign_in: ^6.1.6  # Downgrade para compatibilidad
   
   # Utils
   cupertino_icons: ^1.0.2
@@ -52,17 +52,3 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  assets:
-    - assets/images/
-    - assets/icons/
-    - assets/random_flight/
-    - assets/random_layover/
-  
-  fonts:
-    - family: Raleway
-      fonts:
-        - asset: assets/fonts/Raleway-Regular.ttf
-        - asset: assets/fonts/Raleway-Medium.ttf
-          weight: 500
-        - asset: assets/fonts/Raleway-Bold.ttf
-          weight: 700
