@@ -4,7 +4,7 @@ class AppColors {
   // Primary Colors
   static const Color primaryColor = Color(0xFF25D097);
   static const Color darkBlue = Color(0xFF2B3A42);
-  static const Color goldenPoppy = Color(0xFFC200);
+  static const Color goldenPoppy = Color(0x00ffc200);
 
   // Background Colors
   static const Color appBGColor = Color(0xFFFAFAFA);

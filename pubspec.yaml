@@ -1,6 +1,7 @@
-name: godafly
-description: "Connect with fellow travelers and make your journeys more social"
+name: godafly_flutter
+description: "Connect with fellow travelers during flights and layovers"
 publish_to: 'none'
+
 version: 1.0.0+1
 
 environment:
@@ -9,46 +10,54 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  
+
   # State Management
   flutter_riverpod: ^2.4.9
   
-  # Navigation
-  go_router: ^12.1.3
-  
-  # Storage
+  # Local Storage
   hive: ^2.2.3
   hive_flutter: ^1.1.0
-  flutter_secure_storage: ^9.0.0
   
-  # HTTP & APIs
-  http: ^1.1.0
+  # Firebase - MANTENER como está
+  firebase_core: ^3.15.2
+  firebase_auth: ^5.7.0
+  cloud_firestore: ^5.6.12
+  firebase_storage: ^12.4.10
+  firebase_messaging: ^15.2.10
   
-  # Maps & Location
-  google_maps_flutter: ^2.5.0
-  geolocator: ^10.1.0
-  geocoding: ^2.1.1
+  # QUITAR google_sign_in por ahora
+  # google_sign_in: ^6.1.6  # <-- COMENTADO
   
-  # Firebase - NUEVO - Versiones compatibles
-  firebase_core: ^2.32.0
-  firebase_auth: ^4.20.0
-  cloud_firestore: ^4.17.5
-  firebase_storage: ^11.7.7
-  firebase_messaging: ^14.9.4
-  google_sign_in: ^6.1.6  # Downgrade para compatibilidad
+  # HTTP & API
+  http: ^1.1.2
+  dio: ^5.4.0
   
-  # Utils
-  cupertino_icons: ^1.0.2
-  intl: ^0.19.0
-  image_picker: ^1.0.4
-  cached_network_image: ^3.3.0
+  # Navigation
+  go_router: ^16.0.0
+  
+  # UI & Design
+  cupertino_icons: ^1.0.6
+  
+  # Date & Time
+  intl: ^0.20.2
+  
+  # Utilities
+  equatable: ^2.0.5
+  json_annotation: ^4.8.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.0
+
+  flutter_lints: ^6.0.0
   build_runner: ^2.4.7
+  json_serializable: ^6.7.1
   hive_generator: ^2.0.1
 
 flutter:
   uses-material-design: true
+
+  # # Recursos de la app
+  # assets:
+  #   - assets/images/
+  #   - assets/icons/

@@ -1,11 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:godafly/data/models/firestore_models.dart';
-import 'package:google_sign_in/google_sign_in.dart';
+import 'package:godafly_flutter/data/models/firestore_models.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class FirebaseAuthService {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Stream del usuario actual
@@ -86,58 +84,6 @@ class FirebaseAuthService {
     }
   }
 
-  // Iniciar sesión con Google
-  Future<UserCredential?> signInWithGoogle() async {
-    try {
-      print('🔐 Starting Google Sign In');
-
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) {
-        print('❌ Google Sign In cancelled by user');
-        return null;
-      }
-
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
-
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      final userCredential =
-          await _firebaseAuth.signInWithCredential(credential);
-
-      if (userCredential.user != null) {
-        // Verificar si es primera vez que inicia sesión
-        final userDoc = await _firestore
-            .collection('users')
-            .doc(userCredential.user!.uid)
-            .get();
-
-        if (!userDoc.exists) {
-          // Crear perfil para nuevo usuario de Google
-          final nameParts = (userCredential.user!.displayName ?? '').split(' ');
-          await _createUserProfile(
-            user: userCredential.user!,
-            firstName: nameParts.isNotEmpty ? nameParts.first : 'User',
-            lastName: nameParts.length > 1 ? nameParts.skip(1).join(' ') : '',
-          );
-        } else {
-          // Actualizar estado online para usuario existente
-          await _updateUserPresence(userCredential.user!.uid, isOnline: true);
-        }
-
-        print('✅ Google Sign In successful: ${userCredential.user!.uid}');
-      }
-
-      return userCredential;
-    } catch (e) {
-      print('❌ Google Sign In error: $e');
-      throw Exception('Google Sign In failed: $e');
-    }
-  }
-
   // Cerrar sesión
   Future<void> signOut() async {
     try {
@@ -147,10 +93,7 @@ class FirebaseAuthService {
         await _updateUserPresence(user.uid, isOnline: false);
       }
 
-      await Future.wait([
-        _firebaseAuth.signOut(),
-        _googleSignIn.signOut(),
-      ]);
+      await _firebaseAuth.signOut();
 
       print('✅ User signed out successfully');
     } catch (e) {
@@ -230,8 +173,9 @@ class FirebaseAuthService {
       if (firstName != null) updateData['firstName'] = firstName;
       if (lastName != null) updateData['lastName'] = lastName;
       if (bio != null) updateData['bio'] = bio;
-      if (profileImageUrl != null)
+      if (profileImageUrl != null) {
         updateData['profileImageUrl'] = profileImageUrl;
+      }
       if (interests != null) updateData['interests'] = interests;
 
       await _firestore.collection('users').doc(userId).update(updateData);
@@ -364,29 +308,6 @@ class FirebaseAuthService {
     } on FirebaseAuthException catch (e) {
       print('❌ Change password error: ${e.code} - ${e.message}');
       throw _handleAuthException(e);
-    }
-  }
-
-  // Vincular cuenta con Google
-  Future<UserCredential?> linkWithGoogle() async {
-    try {
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) return null;
-
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      final userCredential = await currentUser?.linkWithCredential(credential);
-      print('✅ Account linked with Google successfully');
-
-      return userCredential;
-    } catch (e) {
-      print('❌ Link with Google error: $e');
-      throw Exception('Failed to link with Google: $e');
     }
   }
 

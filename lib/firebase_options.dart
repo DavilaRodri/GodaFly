@@ -50,19 +50,20 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'YOUR_ANDROID_API_KEY',
-    appId: 'YOUR_ANDROID_APP_ID',
-    messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-    projectId: 'godafly-app',
-    storageBucket: 'godafly-app.appspot.com',
+    apiKey: 'AIzaSyAxE1-UInNeUstFDJdu7irXXrnyU3IINyM',
+    appId: '1:191524668946:android:36b3576e168340f9953acb',
+    messagingSenderId: '191524668946',
+    projectId: 'godafly-17856',
+    storageBucket: 'godafly-17856.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'YOUR_IOS_API_KEY',
-    appId: 'YOUR_IOS_APP_ID',
-    messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-    projectId: 'godafly-app',
-    storageBucket: 'godafly-app.appspot.com',
-    iosBundleId: 'com.godafly.app',
+    apiKey: 'AIzaSyCib8BZ6sRVS2qkDAT1JcC2rVZHvVzlZgU',
+    appId: '1:191524668946:ios:c44350aaa46b361a953acb',
+    messagingSenderId: '191524668946',
+    projectId: 'godafly-17856',
+    storageBucket: 'godafly-17856.firebasestorage.app',
+    iosBundleId: 'com.example.godafly',
   );
+
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:godafly/data/service/amadeus_service.dart';
-import 'package:godafly/presentation/screens/notifications/map_screen.dart';
+import 'package:godafly_flutter/data/service/amadeus_service.dart';
+import 'package:godafly_flutter/presentation/screens/notifications/map_screen.dart';
 import '../../providers/flight_provider.dart';
 
 class FlightSearchScreen extends ConsumerStatefulWidget {
@@ -46,7 +46,7 @@ class _FlightSearchScreenState extends ConsumerState<FlightSearchScreen> {
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.map),
+            icon: const Icon(Icons.route),
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -65,8 +65,8 @@ class _FlightSearchScreenState extends ConsumerState<FlightSearchScreen> {
         children: [
           // Search form
           Container(
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
                 colors: [Color(0xFF25D097), Color(0xFF1DB584)],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
@@ -734,7 +734,7 @@ class _FlightSearchScreenState extends ConsumerState<FlightSearchScreen> {
   void _selectFlight(FlightOffer offer) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
+        content: const Text(
             'Selected flight for \${offer.price.totalAmount.toStringAsFixed(0)}!'),
         backgroundColor: const Color(0xFF25D097),
         action: SnackBarAction(

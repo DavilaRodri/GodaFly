@@ -6,7 +6,6 @@ import '../screens/home/home_screen.dart';
 import '../screens/search/search_screen.dart';
 import '../screens/travels/travels_screen.dart';
 import '../screens/chat/chat_screen.dart';
-import '../screens/notifications/notification_screen.dart';
 import '../screens/other_screens.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {

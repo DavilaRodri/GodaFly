@@ -468,7 +468,7 @@ class TravelsScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
 
-          ...travels.map((travel) => _buildTimelineItem(travel)).toList(),
+          ...travels.map((travel) => _buildTimelineItem(travel)),
         ],
       ),
     );

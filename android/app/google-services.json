@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "191524668946",
+    "project_id": "godafly-17856",
+    "storage_bucket": "godafly-17856.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:191524668946:android:f0f6b5c6f27fa585953acb",
+        "android_client_info": {
+          "package_name": "com.app.godafly"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAxE1-UInNeUstFDJdu7irXXrnyU3IINyM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:191524668946:android:36b3576e168340f9953acb",
+        "android_client_info": {
+          "package_name": "com.example.godafly"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAxE1-UInNeUstFDJdu7irXXrnyU3IINyM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

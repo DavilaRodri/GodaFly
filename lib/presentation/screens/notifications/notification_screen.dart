@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:godafly/presentation/providers/notification_provider.dart';
+import 'package:godafly_flutter/presentation/providers/notification_provider.dart';
 import '../chat/chat_detail_screen.dart';
 
 class NotificationScreen extends ConsumerWidget {

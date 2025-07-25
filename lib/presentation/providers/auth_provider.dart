@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:godafly/domain/entities/user.dart';
+import 'package:godafly_flutter/domain/entities/user.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 // Provider para el box de Hive
@@ -73,8 +73,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
           bio: 'Travel enthusiast from the mock login',
           profileImage: null,
           interests: [
-            Interest(id: '1', name: 'Adventure'),
-            Interest(id: '2', name: 'Culture'),
+            const Interest(id: '1', name: 'Adventure'),
+            const Interest(id: '2', name: 'Culture'),
           ],
           createdAt: DateTime.now(),
         );

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:godafly/data/service/amadeus_service.dart';
+import 'package:godafly_flutter/data/service/amadeus_service.dart';
 import '../../providers/flight_provider.dart';
 import 'dart:math' as math;
 
@@ -131,11 +131,11 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
                   colors: [Color(0xFF25D097), Color(0xFF1DB584)],
                 ),
-                borderRadius: const BorderRadius.only(
+                borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(20),
                   bottomRight: Radius.circular(20),
                 ),
@@ -231,8 +231,9 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     // Add origin and destination if they exist
     final allAirports = <Airport>[];
     if (widget.originAirport != null) allAirports.add(widget.originAirport!);
-    if (widget.destinationAirport != null)
+    if (widget.destinationAirport != null) {
       allAirports.add(widget.destinationAirport!);
+    }
     allAirports.addAll(airportsToShow);
 
     // Remove duplicates
@@ -412,7 +413,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '${itinerary.firstSegment.flightNumber}',
+                itinerary.firstSegment.flightNumber,
                 style:
                     const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
